@@ -12,7 +12,6 @@ const inventorySchema = new Schema({
     isComplete: { type: Boolean , unique: false },
     tShirtSize: { type: String , unique: false }, //SM, M, L, XL
 
-
 	// local: {
 	// 	username: { type: String, unique: false, required: false },
 	// 	password: { type: String, unique: false, required: false }
