@@ -2,6 +2,7 @@
 * - this is where we set up our connection to the mongo database
 */
 const mongoose = require('mongoose')
+// const User = require("./models/User")
 mongoose.Promise = global.Promise
 let MONGO_URL
 const MONGO_LOCAL_URL = 'mongodb://localhost/mern-passport'
@@ -26,3 +27,4 @@ db.once('open', () => {
 })
 
 module.exports = db
+

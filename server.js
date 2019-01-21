@@ -11,11 +11,13 @@ const morgan = require('morgan')
 const session = require('express-session')
 const MongoStore = require('connect-mongo')(session)
 const dbConnection = require('./db') // loads our connection to the mongo database
+const User = require("./db/models/User")
 const passport = require('./passport')
 const app = express()
 const PORT = process.env.PORT || 3001
 
 var cors = require('cors');
+const mongoose = require('mongoose');
 
 // Middleware necessary for front end to talk to backend
 app.use(cors({
@@ -104,9 +106,64 @@ app.use(function(err, req, res, next) {
 	console.log('====== ERROR =======')
 	console.error(err.stack)
 	res.status(500)
-})
+``})
 
 // ==== Starting Server =====
 app.listen(PORT, () => {
 	console.log(`App listening on PORT: ${PORT}`)
-})
+});
+
+
+//**** Populating data 
+
+// Connect to the MongoDB
+// mongoose.connect("mongodb://localhost/schemaexample", { useNewUrlParser: true });
+
+// Create an object containing dummy data to save to the database
+var driver = {
+  array: ["driver1", "driver2", "driver3"],
+  string: []
+  //   "\"Don't worry if it doesn't work right. If everything did, you'd be out of a job\" - Mosher's Law of Software Engineering",
+};
+
+var user = {
+    array: ["sender1", "sender2", "sender3"],
+    string: []
+    //   "\"Don't worry if it doesn't work right. If everything did, you'd be out of a job\" - Mosher's Law of Software Engineering",
+  };
+
+  var Inventory = {
+    array: ["package1", "package2", "package3"],
+    string: []
+    //   "\"Don't worry if it doesn't work right. If everything did, you'd be out of a job\" - Mosher's Law of Software Engineering",
+  };
+app.get("/test-user", function(req, res) {
+User.create(
+	  {
+		fullName: "Jackie",
+		homeAddress: "1201 S Madison St, Seattle, WA 98021",
+		phoneNumber: "425-333-5678",
+		email: "jackie@jackie.com",
+		// local: [
+		// 	username: "jackie",
+		// 	password: "jackie",
+		// ],
+		// google: [
+		// 	googleId: "jakcie",
+		// ]
+	  },function(error, data) {
+		  if (error) throw error;
+		  console.log(data)
+	  }
+  )
+});
+// Save a new Example using the data object
+// db.create.User(data)
+//   .then(function(dbUser) {
+//     // If saved successfully, print the new Example document to the console
+//     console.log(dbUser);
+//   })
+//   .catch(function(err) {
+//     // If an error occurs, log the error message
+//     console.log(err.message);
+//   });

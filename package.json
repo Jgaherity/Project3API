@@ -31,6 +31,7 @@
 		"express-session": "^1.15.6",
 		"express-sessions": "^1.0.6",
 		"if-env": "^1.0.4",
+		"mongod": "^2.0.0",
 		"mongoose": "^5.3.16",
 		"morgan": "^1.9.1",
 		"passport": "^0.4.0",
