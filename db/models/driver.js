@@ -54,5 +54,5 @@ driverSchema.pre('save', function(next) {
 })
 
 // Create reference to User & export
-const Driver = mongoose.model('Driver', driverSchema)
+const Driver = mongoose.model('driver', driverSchema)
 module.exports = Driver

@@ -12,13 +12,13 @@ const inventorySchema = new Schema({
     isComplete: { type: Boolean , unique: false },
     tShirtSize: { type: String , unique: false }, //SM, M, L, XL
 
-	// local: {
-	// 	username: { type: String, unique: false, required: false },
-	// 	password: { type: String, unique: false, required: false }
-	// },
-	// google: {
-	// 	googleId: { type: String, required: false }
-    // },
+	local: {
+		username: { type: String, unique: false, required: false },
+		password: { type: String, unique: false, required: false }
+	},
+	google: {
+		googleId: { type: String, required: false }
+    },
     
 
 	// local: {
@@ -34,14 +34,14 @@ const inventorySchema = new Schema({
 })
 
 // Define schema methods
-// inventorySchema.methods = {
-// 	checkPassword: function(inputPassword) {
-// 		return bcrypt.compareSync(inputPassword, this.local.password)
-// 	},
-// 	hashPassword: plainTextPassword => {
-// 		return bcrypt.hashSync(plainTextPassword, 10)
-// 	}
-// }
+inventorySchema.methods = {
+	checkPassword: function(inputPassword) {
+		return bcrypt.compareSync(inputPassword, this.local.password)
+	},
+	hashPassword: plainTextPassword => {
+		return bcrypt.hashSync(plainTextPassword, 10)
+	}
+}
 
 // Define hooks for pre-saving
 inventorySchema.pre('save', function(next) {
@@ -57,5 +57,5 @@ inventorySchema.pre('save', function(next) {
 })
 
 // Create reference to User & export
-const Inventory = mongoose.model('Inventory', inventorySchema)
+const Inventory = mongoose.model('inventory', inventorySchema)
 module.exports = Inventory

@@ -11,7 +11,9 @@ const morgan = require('morgan')
 const session = require('express-session')
 const MongoStore = require('connect-mongo')(session)
 const dbConnection = require('./db') // loads our connection to the mongo database
-const User = require("./db/models/User")
+const User = require("./db/models/user")
+const Driver = require("./db/models/driver")
+const Inventory = require("./db/models/inventory")
 const passport = require('./passport')
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -132,12 +134,12 @@ var user = {
     //   "\"Don't worry if it doesn't work right. If everything did, you'd be out of a job\" - Mosher's Law of Software Engineering",
   };
 
-  var Inventory = {
+  var inventory = {
     array: ["package1", "package2", "package3"],
     string: []
     //   "\"Don't worry if it doesn't work right. If everything did, you'd be out of a job\" - Mosher's Law of Software Engineering",
   };
-app.get("/test-user", function(req, res) {
+// app.get("/test-user", function(req, res) {
 User.create(
 	  {
 		fullName: "Jackie",
@@ -156,8 +158,39 @@ User.create(
 		  console.log(data)
 	  }
   )
-});
-// Save a new Example using the data object
+
+  
+Driver.create(
+	{
+	  fullName: "Vanita",
+	  homeAddress: "1201 S Madison St, Seattle, WA 98021",
+	  phoneNumber: "425-333-5678",
+	  email: "vanita@jackie.com",
+	  // local: [
+	  // 	username: "jackie",
+	  // 	password: "jackie",
+	  // ],
+	  // google: [
+	  // 	googleId: "jakcie",
+	  // ]
+	},function(error, data) {
+		if (error) throw error;
+		console.log(data)
+	}
+);
+
+Inventory.create( {
+
+inventoryItemName: "Lucky Package",
+pickUpAddress: "Mi Casa",
+dropOffAddress: "Tu Casa!",
+deliveryInstructions: ";)",
+isComplete: "false",
+tShirtSize: "L"
+
+ });
+
+ // Save a new Example using the data object
 // db.create.User(data)
 //   .then(function(dbUser) {
 //     // If saved successfully, print the new Example document to the console

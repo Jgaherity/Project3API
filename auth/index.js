@@ -1,8 +1,8 @@
 const express = require('express')
 const router = express.Router()
-const User = require('../db/models/User')
-const Driver = require('../db/models/Driver')
-const Inventory = require('../db/models/Inventory')
+const User = require('../db/models/user')
+const Driver = require('../db/models/driver')
+const Inventory = require('../db/models/inventory')
 const passport = require('../passport')
 
 
