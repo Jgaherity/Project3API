@@ -17,6 +17,13 @@ router.get('/google/callback',
 	})
 )
 
+// facebook
+app.get('/auth/facebook', passport.authenticate('facebook'));
+
+app.get('/auth/facebook/callback',
+  passport.authenticate('facebook', { successRedirect: '/', 
+  										failureRedirect: '/login' }));
+
 // this route is just used to get the user basic info
 router.get('/user', (req, res, next) => {
 	console.log('===== user!!======')
