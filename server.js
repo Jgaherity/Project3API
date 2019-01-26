@@ -186,9 +186,15 @@ pickUpAddress: "Mi Casa",
 dropOffAddress: "Tu Casa!",
 deliveryInstructions: ";)",
 isComplete: "false",
-tShirtSize: "L"
+tShirtSize: "L",
+},
 
- });
+function(error, data) {
+	if (error) throw error;
+	console.log(data)
+}
+
+);
 
  // Save a new Example using the data object
 // db.create.User(data)
