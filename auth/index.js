@@ -24,19 +24,7 @@ router.get('/auth/facebook/callback',
   passport.authenticate('facebook', { successRedirect: '/', 
   										failureRedirect: '/login' }));
 
-// this route is just used to get the user basic info
-router.get('/user', (req, res, next) => {
-	console.log('===== user!!======')
-	console.log(req.User)
 
-	if (req.User) {
-		return res.json({ user: req.User })
-	} else {
-		return res.json({ User: null })
-	}
-
-	//res.json("hello")
-})
 
 router.post(
 	'/login',

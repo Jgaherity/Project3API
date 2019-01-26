@@ -8,6 +8,7 @@ require('dotenv').config()
 const express = require('express')
 const bodyParser = require('body-parser')
 const morgan = require('morgan')
+const router = express.Router()
 const session = require('express-session')
 const MongoStore = require('connect-mongo')(session)
 const dbConnection = require('./db') // loads our connection to the mongo database
@@ -76,6 +77,77 @@ app.get(
 	// 	res.redirect('/')
 	// }
 )
+
+app.get('/users', (req, res, next) => {
+	// console.log('===== user!!======')
+	// console.log(req.User)
+
+	// if (req.User) {
+	// 	return res.json({ user: req.User })
+	// } else {
+	// 	return res.json({ User: null })
+	// }
+
+	User.find({}, function(error, results) {
+		// Show any errors
+		if (error) {
+		  console.log(error);
+		}
+		else {
+		  console.log(results)
+		  // Otherwise, send the books we found to the browser as a json
+		  res.json(results);
+		}
+	  });
+
+	//res.json("hello")
+})
+
+app.get('/drivers', (req, res, next) => {
+	// console.log('===== user!!======')
+	// console.log(req.User)
+
+	// if (req.User) {
+	// 	return res.json({ user: req.User })
+	// } else {
+	// 	return res.json({ User: null })
+	// }
+
+	Driver.find({}, function(error, results) {
+		// Show any errors
+		if (error) {
+		  console.log(error);
+		}
+		else {
+		  console.log(results)
+		  // Otherwise, send the books we found to the browser as a json
+		  res.json(results);
+		}
+	  });
+
+	//res.json("hello")
+})
+
+app.get('/inventory', (req, res, next) => {
+	// console.log('===== user!!======')
+	// console.log(req.User)
+
+
+	Inventory.find({}, function(error, results) {
+		// Show any errors
+		if (error) {
+		  console.log(error);
+		}
+		else {
+		  console.log(results)
+		  // Otherwise, send the books we found to the browser as a json
+		  res.json(results);
+		}
+	  });
+
+	//res.json("hello")
+})
+
 
 app.get('/',
 	(req, res, next) => {
@@ -153,11 +225,11 @@ User.create(
 		// google: [
 		// 	googleId: "jakcie",
 		// ]
-	  },function(error, data) {
-		  if (error) throw error;
-		  console.log(data)
-	  }
-  )
+	},function(error, data) {
+		if (error) throw error;
+		console.log(data)
+	}
+)
 
   
 Driver.create(
@@ -187,12 +259,10 @@ dropOffAddress: "Tu Casa!",
 deliveryInstructions: ";)",
 isComplete: "false",
 tShirtSize: "L",
-},
-
-function(error, data) {
-	if (error) throw error;
-	console.log(data)
-}
+},	function(error, data) {
+		if (error) throw error;
+		console.log(data)
+	}
 
 );
 
@@ -206,3 +276,7 @@ function(error, data) {
 //     // If an error occurs, log the error message
 //     console.log(err.message);
 //   });
+
+
+
+// this route is just used to get the user basic info
