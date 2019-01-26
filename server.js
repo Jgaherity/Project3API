@@ -148,6 +148,45 @@ app.get('/inventory', (req, res, next) => {
 	//res.json("hello")
 })
 
+app.post("/submitInventory", function(req, res) {
+	// Save the request body as an object called book
+	var newParcel = req.body;
+	//res.json(newParcel);
+	console.log(newParcel);
+	console.log("SUCCCESS");
+	//check distances here-----
+  
+	Inventory.create(newParcel, function(error, saved) {
+	  // Show any errors
+	  if (error) {
+		console.log(error);
+	  }
+	  else {
+		// Otherwise, send the response to the client (for AJAX success function)
+		res.send(saved);
+		//console.log("Saved:", newParcel);
+
+		//ANOTHER QUERY	
+		//grab all drivers
+
+		Drivers.find({ }, function(error, found) {
+			// Show any errors
+			if (error) {
+			  console.log(error);
+			}
+			else {
+				console.log(found)
+				res.json(found);
+				//inside callback: do math with the google API 
+			}
+		  });
+	
+	  }
+	});
+
+
+  });
+
 
 app.get('/',
 	(req, res, next) => {
