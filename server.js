@@ -264,7 +264,20 @@ User.create(
 		// google: [
 		// 	googleId: "jakcie",
 		// ]
-	},function(error, data) {
+	},
+	{
+		fullName: "Max",
+		homeAddress: "1799 Fourth Street, Berkeley, CA 94710",
+		phoneNumber: "425-333-5678",
+		email: "max@max.com",
+	},
+	{
+		fullName: "Lewis",
+		homeAddress: "1799 Fourth Street, Berkeley, CA 94710",
+		phoneNumber: "425-333-5678",
+		email: "lewis@lewis.com",
+	},
+	function(error, data) {
 		if (error) throw error;
 		console.log(data)
 	}
@@ -274,9 +287,9 @@ User.create(
 Driver.create(
 	{
 	  fullName: "Vanita",
-	  homeAddress: "1201 S Madison St, Seattle, WA 98021",
-	  phoneNumber: "425-333-5678",
-	  email: "vanita@jackie.com",
+	  homeAddress: "1221 1st Avenue, Seattle, WA 98101",
+	  phoneNumber: "425-123-1231",
+	  email: "vanita2716@gmail.com",
 	  // local: [
 	  // 	username: "jackie",
 	  // 	password: "jackie",
@@ -284,24 +297,59 @@ Driver.create(
 	  // google: [
 	  // 	googleId: "jakcie",
 	  // ]
-	},function(error, data) {
+	},
+	{
+	  fullName: "Bobby",
+	  homeAddress: "2623 NE University Village Street, Seattle, WA 98105",
+	  phoneNumber: "425-123-1231",
+	  email: "bobby@gmail.com",
+	  // local: [
+	  // 	username: "jackie",
+	  // 	password: "jackie",
+	  // ],
+	  // google: [
+	  // 	googleId: "jakcie",
+	  // ]
+	},
+	
+	function(error, data) {
 		if (error) throw error;
 		console.log(data)
 	}
 );
 
-Inventory.create( {
-
-inventoryItemName: "Lucky Package",
-pickUpAddress: "Mi Casa",
-dropOffAddress: "Tu Casa!",
-deliveryInstructions: ";)",
-isComplete: "false",
+Inventory.create( 
+	
+{inventoryItemName: "Mom's Present",
+pickUpAddress: "22020 17th Avenue Southeast, Bothell, WA 98021",
+dropOffAddress: "901 Boren Ave, Seattle, WA 98104",
+deliveryInstructions: "Please drop off to the 14th Floor",
+isComplete: "true",
 tShirtSize: "L",
-},	function(error, data) {
+},
+	
+{inventoryItemName: "Dad's Present",
+pickUpAddress: "21714 43rd Drive Southeast, Bothell, WA 98021",
+dropOffAddress: "1221 1st Ave, Seattle, WA 98101",
+deliveryInstructions: "Please drop off to the 16th Floor",
+isComplete: "true",
+tShirtSize: "M",
+},
+
+{inventoryItemName: "Valentine's Present",
+pickUpAddress: "6901 Sand Point Way Northeast, Seattle, WA 98115",
+dropOffAddress: "22102 54th Ave W, Mountlake Terrace, WA 98043",
+deliveryInstructions: "Please drop off at the front door",
+isComplete: "false",
+tShirtSize: "M",
+},
+
+	function(error, data) {
 		if (error) throw error;
 		console.log(data)
 	}
+
+
 
 );
 
