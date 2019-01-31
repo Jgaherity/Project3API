@@ -5,7 +5,6 @@ if (process.env.NODE_ENV !== 'production') {
 }
 require('dotenv').config()
 
-const express = require('express')
 const bodyParser = require('body-parser')
 const morgan = require('morgan')
 const router = express.Router()
@@ -15,12 +14,73 @@ const dbConnection = require('./db') // loads our connection to the mongo databa
 const User = require("./db/models/user")
 const Driver = require("./db/models/driver")
 const Inventory = require("./db/models/inventory")
-const passport = require('./passport')
-const app = express()
-const PORT = process.env.PORT || 3001
+
+import express from 'express';
+import passport from 'passport';
+import FacebookStrategy from 'passport-facebook';
+import GoogleStrategy from 'passport-google-oauth20';
+// Import Facebook and Google OAuth apps configs
+import { facebook, google } from './config';
+
+// Transform Facebook profile because Facebook and Google profile objects look different
+// and we want to transform them into user objects that have the same set of attributes
+const transformFacebookProfile = (profile) => ({
+  name: profile.name,
+  avatar: profile.picture.data.url,
+});
+
+// Transform Google profile into user object
+const transformGoogleProfile = (profile) => ({
+  name: profile.displayName,
+  avatar: profile.image.url,
+});
+
+// Register Facebook Passport strategy
+passport.use(new FacebookStrategy(facebook,
+  // Gets called when user authorizes access to their profile
+  async (accessToken, refreshToken, profile, done)
+    // Return done callback and pass transformed user object
+    => done(null, transformFacebookProfile(profile._json))
+));
+
+// Register Google Passport strategy
+passport.use(new GoogleStrategy(google,
+  async (accessToken, refreshToken, profile, done)
+    => done(null, transformGoogleProfile(profile._json))
+));
+
+// Serialize user into the sessions
+passport.serializeUser((user, done) => done(null, user));
+
+// Deserialize user from the sessions
+passport.deserializeUser((user, done) => done(null, user));
+
+// Initialize http server
+const app = express();
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Set up Facebook auth routes
+app.get('/auth/facebook', passport.authenticate('facebook'));
+
+app.get('/auth/facebook/callback',
+  passport.authenticate('facebook', { failureRedirect: '/auth/facebook' }),
+  // Redirect user back to the mobile app using Linking with a custom protocol OAuthLogin
+  (req, res) => res.redirect('OAuthLogin://login?user=' + JSON.stringify(req.user)));
+
+// Set up Google auth routes
+app.get('/auth/google', passport.authenticate('google', { scope: ['profile'] }));
+
+app.get('/auth/google/callback',
+  passport.authenticate('google', { failureRedirect: '/auth/google' }),
+  (req, res) => res.redirect('OAuthLogin://login?user=' + JSON.stringify(req.user)));
+
 
 var cors = require('cors');
 const mongoose = require('mongoose');
+
 
 // Middleware necessary for front end to talk to backend
 app.use(cors({
@@ -51,271 +111,213 @@ app.use(function(req, res, next) {
 	next();
   });
 
-// ===== Passport ====
-app.use(passport.initialize())
-app.use(passport.session()) // will call the deserializeUser
-
-// ===== testing middleware =====
-//this is working
-app.use(function(req, res, next) {
-	// console.log('===== passport user =======')
-	// console.log(req.session)
-	// console.log(req.user)
-	// console.log('===== END =======')
-	next()
-})
-// testing
-app.get(
-	'/auth/google/callback',
-	(req, res, next) => {
-		console.log(`req.user: ${req.user}`)
-		console.log('======= /auth/google/callback was called! =====')
-		next()
-	},
-	// passport.authenticate('google', { failureRedirect: '/login' }),
-	// (req, res) => {
-	// 	res.redirect('/')
-	// }
-)
-
-app.get('/users', (req, res, next) => {
-	// console.log('===== user!!======')
-	// console.log(req.User)
-
-	// if (req.User) {
-	// 	return res.json({ user: req.User })
-	// } else {
-	// 	return res.json({ User: null })
-	// }
-
-	User.find({}, function(error, results) {
-		// Show any errors
-		if (error) {
-		  console.log(error);
-		}
-		else {
-		  console.log(results)
-		  // Otherwise, send the books we found to the browser as a json
-		  res.json(results);
-		}
-	  });
-
-	//res.json("hello")
-})
-
-app.get('/drivers', (req, res, next) => {
-	// console.log('===== user!!======')
-	// console.log(req.User)
-
-	// if (req.User) {
-	// 	return res.json({ user: req.User })
-	// } else {
-	// 	return res.json({ User: null })
-	// }
-
-	Driver.find({}, function(error, results) {
-		// Show any errors
-		if (error) {
-		  console.log(error);
-		}
-		else {
-		  console.log(results)
-		  // Otherwise, send the books we found to the browser as a json
-		  res.json(results);
-		}
-	  });
-
-	//res.json("hello")
-})
-
-app.get('/inventory', (req, res, next) => {
-	// console.log('===== user!!======')
-	// console.log(req.User)
-
-
-	Inventory.find({}, function(error, results) {
-		// Show any errors
-		if (error) {
-		  console.log(error);
-		}
-		else {
-		  console.log(results)
-		  // Otherwise, send the books we found to the browser as a json
-		  res.json(results);
-		}
-	  });
-
-	//res.json("hello")
-})
-
-app.post("/submitInventory", function(req, res) {
-	// Save the request body as an object called book
-	var newParcel = req.body;
-	//res.json(newParcel);
-	console.log(newParcel);
-	console.log("SUCCCESS");
-	//check distances here-----
+  app.get('/users', (req, res, next) => {
+    // console.log('===== user!!======')
+    // console.log(req.User)
   
-	Inventory.create(newParcel, function(error, saved) {
-	  // Show any errors
-	  if (error) {
-		console.log(error);
-	  }
-	  else {
-		// Otherwise, send the response to the client (for AJAX success function)
-		res.send(saved);
-		//console.log("Saved:", newParcel);
+    // if (req.User) {
+    // 	return res.json({ user: req.User })
+    // } else {
+    // 	return res.json({ User: null })
+    // }
+  
+    User.find({}, function(error, results) {
+      // Show any errors
+      if (error) {
+        console.log(error);
+      }
+      else {
+        console.log(results)
+        // Otherwise, send the books we found to the browser as a json
+        res.json(results);
+      }
+      });
+  
+    //res.json("hello")
+  })
+  
+  app.get('/drivers', (req, res, next) => {
+    // console.log('===== user!!======')
+    // console.log(req.User)
+  
+    // if (req.User) {
+    // 	return res.json({ user: req.User })
+    // } else {
+    // 	return res.json({ User: null })
+    // }
+  
+    Driver.find({}, function(error, results) {
+      // Show any errors
+      if (error) {
+        console.log(error);
+      }
+      else {
+        console.log(results)
+        // Otherwise, send the books we found to the browser as a json
+        res.json(results);
+      }
+      });
+  
+    //res.json("hello")
+  })
+  
+  app.get('/inventory', (req, res, next) => {
+    // console.log('===== user!!======')
+    // console.log(req.User)
+  
+  
+    Inventory.find({}, function(error, results) {
+      // Show any errors
+      if (error) {
+        console.log(error);
+      }
+      else {
+        console.log(results)
+        // Otherwise, send the books we found to the browser as a json
+        res.json(results);
+      }
+      });
+  
+    //res.json("hello")
+  })
+  
+  app.post("/submitInventory", function(req, res) {
+    // Save the request body as an object called book
+    var newParcel = req.body;
+    //res.json(newParcel);
+    console.log(newParcel);
+    console.log("SUCCCESS");
+    //check distances here-----
+    
+    Inventory.create(newParcel, function(error, saved) {
+      // Show any errors
+      if (error) {
+      console.log(error);
+      }
+      else {
+      // Otherwise, send the response to the client (for AJAX success function)
+      res.send(saved);
+      //console.log("Saved:", newParcel);
+  
+      //ANOTHER QUERY	
+      //grab all drivers
+  
+      Drivers.find({ }, function(error, found) {
+        // Show any errors
+        if (error) {
+          console.log(error);
+        }
+        else {
+          console.log(found)
+          res.json(found);
+          //inside callback: do math with the google API 
+        }
+        });
+    
+      }
+    });
+  
+  
+    });
+  
+  
+  app.get('/',
+    (req, res, next) => {
+      // console.log(`req.user: ${req.user}`)
+      // console.log('======= /auth/google/callback was called! =====')
+      // next()
+      res.json("hello")
+    }
+    // passport.authenticate('google', { failureRedirect: '/login' }),
+    // (req, res) => {
+    // 	res.redirect('/')
+    // }
+  )
+  
+  // ==== if its production environment!
+  if (process.env.NODE_ENV === 'production') {
+    const path = require('path')
+    console.log('YOU ARE IN THE PRODUCTION ENV')
+    app.use('/static', express.static(path.join(__dirname, './client/build/static')))
+    app.get('/', (req, res) => {
+      res.sendFile(path.join(__dirname, './client/build/'))
+    })
+  }
 
-		//ANOTHER QUERY	
-		//grab all drivers
+  var driver = {
+    array: ["driver1", "driver2", "driver3"],
+    string: []
+    //   "\"Don't worry if it doesn't work right. If everything did, you'd be out of a job\" - Mosher's Law of Software Engineering",
+  };
+  
+  var user = {
+      array: ["sender1", "sender2", "sender3"],
+      string: []
+      //   "\"Don't worry if it doesn't work right. If everything did, you'd be out of a job\" - Mosher's Law of Software Engineering",
+    };
+  
+    var inventory = {
+      array: ["package1", "package2", "package3"],
+      string: []
+      //   "\"Don't worry if it doesn't work right. If everything did, you'd be out of a job\" - Mosher's Law of Software Engineering",
+    };
+  // app.get("/test-user", function(req, res) {
+  User.create(
+      {
+      fullName: "Jackie",
+      homeAddress: "1201 S Madison St, Seattle, WA 98021",
+      phoneNumber: "425-333-5678",
+      email: "jackie@jackie.com",
+      // local: [
+      // 	username: "jackie",
+      // 	password: "jackie",
+      // ],
+      // google: [
+      // 	googleId: "jakcie",
+      // ]
+    },function(error, data) {
+      if (error) throw error;
+      console.log(data)
+    }
+  )
+  
+    
+  Driver.create(
+    {
+      fullName: "Vanita",
+      homeAddress: "1201 S Madison St, Seattle, WA 98021",
+      phoneNumber: "425-333-5678",
+      email: "vanita@jackie.com",
+      // local: [
+      // 	username: "jackie",
+      // 	password: "jackie",
+      // ],
+      // google: [
+      // 	googleId: "jakcie",
+      // ]
+    },function(error, data) {
+      if (error) throw error;
+      console.log(data)
+    }
+  );
+  
+  Inventory.create( {
+  
+  inventoryItemName: "Lucky Package",
+  pickUpAddress: "Mi Casa",
+  dropOffAddress: "Tu Casa!",
+  deliveryInstructions: ";)",
+  isComplete: "false",
+  tShirtSize: "L",
+  },	function(error, data) {
+      if (error) throw error;
+      console.log(data)
+    }
+  
+  );
 
-		Drivers.find({ }, function(error, found) {
-			// Show any errors
-			if (error) {
-			  console.log(error);
-			}
-			else {
-				console.log(found)
-				res.json(found);
-				//inside callback: do math with the google API 
-			}
-		  });
-	
-	  }
-	});
-
-
-  });
-
-
-app.get('/',
-	(req, res, next) => {
-		// console.log(`req.user: ${req.user}`)
-		// console.log('======= /auth/google/callback was called! =====')
-		// next()
-		res.json("hello")
-	}
-	// passport.authenticate('google', { failureRedirect: '/login' }),
-	// (req, res) => {
-	// 	res.redirect('/')
-	// }
-)
-
-// ==== if its production environment!
-if (process.env.NODE_ENV === 'production') {
-	const path = require('path')
-	console.log('YOU ARE IN THE PRODUCTION ENV')
-	app.use('/static', express.static(path.join(__dirname, './client/build/static')))
-	app.get('/', (req, res) => {
-		res.sendFile(path.join(__dirname, './client/build/'))
-	})
-}
-
-/* Express app ROUTING */
-app.use('/api', require('./auth'))
-
-// ====== Error handler ====
-app.use(function(err, req, res, next) {
-	console.log('====== ERROR =======')
-	console.error(err.stack)
-	res.status(500)
-``})
-
-// ==== Starting Server =====
-app.listen(PORT, () => {
-	console.log(`App listening on PORT: ${PORT}`)
+// Launch the server on the port 3000
+const server = app.listen(3000, () => {
+  const { address, port } = server.address();
+  console.log(`Listening at http://${address}:${port}`);
 });
-
-
-//**** Populating data 
-
-// Connect to the MongoDB
-// mongoose.connect("mongodb://localhost/schemaexample", { useNewUrlParser: true });
-
-// Create an object containing dummy data to save to the database
-var driver = {
-  array: ["driver1", "driver2", "driver3"],
-  string: []
-  //   "\"Don't worry if it doesn't work right. If everything did, you'd be out of a job\" - Mosher's Law of Software Engineering",
-};
-
-var user = {
-    array: ["sender1", "sender2", "sender3"],
-    string: []
-    //   "\"Don't worry if it doesn't work right. If everything did, you'd be out of a job\" - Mosher's Law of Software Engineering",
-  };
-
-  var inventory = {
-    array: ["package1", "package2", "package3"],
-    string: []
-    //   "\"Don't worry if it doesn't work right. If everything did, you'd be out of a job\" - Mosher's Law of Software Engineering",
-  };
-// app.get("/test-user", function(req, res) {
-User.create(
-	  {
-		fullName: "Jackie",
-		homeAddress: "1201 S Madison St, Seattle, WA 98021",
-		phoneNumber: "425-333-5678",
-		email: "jackie@jackie.com",
-		// local: [
-		// 	username: "jackie",
-		// 	password: "jackie",
-		// ],
-		// google: [
-		// 	googleId: "jakcie",
-		// ]
-	},function(error, data) {
-		if (error) throw error;
-		console.log(data)
-	}
-)
-
-  
-Driver.create(
-	{
-	  fullName: "Vanita",
-	  homeAddress: "1201 S Madison St, Seattle, WA 98021",
-	  phoneNumber: "425-333-5678",
-	  email: "vanita@jackie.com",
-	  // local: [
-	  // 	username: "jackie",
-	  // 	password: "jackie",
-	  // ],
-	  // google: [
-	  // 	googleId: "jakcie",
-	  // ]
-	},function(error, data) {
-		if (error) throw error;
-		console.log(data)
-	}
-);
-
-Inventory.create( {
-
-inventoryItemName: "Lucky Package",
-pickUpAddress: "Mi Casa",
-dropOffAddress: "Tu Casa!",
-deliveryInstructions: ";)",
-isComplete: "false",
-tShirtSize: "L",
-},	function(error, data) {
-		if (error) throw error;
-		console.log(data)
-	}
-
-);
-
- // Save a new Example using the data object
-// db.create.User(data)
-//   .then(function(dbUser) {
-//     // If saved successfully, print the new Example document to the console
-//     console.log(dbUser);
-//   })
-//   .catch(function(err) {
-//     // If an error occurs, log the error message
-//     console.log(err.message);
-//   });
-
-
-
-// this route is just used to get the user basic info
