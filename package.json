@@ -38,12 +38,13 @@
     "express-sessions": "^1.0.6",
     "if-env": "^1.0.4",
     "mongod": "^2.0.0",
-    "mongoose": "^5.3.16",
+    "mongoose": "^5.2.8",
     "morgan": "^1.9.1",
     "passport": "^0.4.0",
     "passport-facebook": "^3.0.0",
     "passport-google-oauth": "^1.0.0",
-    "passport-local": "^1.0.0"
+    "passport-local": "^1.0.0",
+    "socket.io": "^2.2.0"
   },
   "repository": {
     "type": "git",
