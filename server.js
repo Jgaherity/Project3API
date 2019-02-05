@@ -169,7 +169,7 @@ app.post("/submitInventory", function(req, res) {
 		//ANOTHER QUERY	
 		//grab all drivers
 
-		Drivers.find({ }, function(error, found) {
+		Driver.find({ }, function(error, found) {
 			// Show any errors
 			if (error) {
 			  console.log(error);
