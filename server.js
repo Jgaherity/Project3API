@@ -187,6 +187,42 @@ app.post("/submitInventory", function(req, res) {
 
   });
 
+app.post("/submitUser", function(req, res) {
+	// Save the request body as an object called book
+	var newUser = req.body;
+	//res.json(newUser);
+	console.log(newUser);
+	console.log("SUCCCESS");
+	//check distances here-----
+	
+	User.create(newUser, function(error, saved) {
+		// Show any errors
+		if (error) {
+			console.log(error);
+		}
+		else {
+		// Otherwise, send the response to the client (for AJAX success function)
+		res.send(saved);
+		//console.log("Saved:", newParcel);
+
+		//ANOTHER QUERY	
+		//grab all drivers
+
+		User.find({ }, function(error, found) {
+			// Show any errors
+			if (error) {
+				console.log(error);
+			}
+			else {
+				console.log(found)
+				res.json(found);
+				//inside callback: do math with the google API 
+			}
+			});
+		}
+	});
+});
+	
 
 app.get('/',
 	(req, res, next) => {
