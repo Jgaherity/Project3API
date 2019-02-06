@@ -188,7 +188,7 @@ app.post("/submitInventory", function(req, res) {
 
   });
 
-app.post("/submitUser", function(req, res) {
+app.post("/git", function(req, res) {
 	// Save the request body as an object called book
 	var newUser = req.body;
 	//res.json(newUser);
@@ -289,7 +289,7 @@ var user = {
 	};
 	
 
-	
+
 // app.get("/test-user", function(req, res) {
 // User.create(
 // 	  {
