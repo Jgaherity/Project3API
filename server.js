@@ -19,14 +19,38 @@ const passport = require('./passport')
 const app = express()
 const PORT = process.env.PORT || 3001
 
+//socket
+var http = require('http');
+var socketio = require('socket.io');
+var server = http.Server(app);
+var websocket = socketio(server);
 
+// The event will be called when a client is connected.
+websocket.on('connection', (socket) => {
+	console.log('A client just joined on', socket.id);
+});
+
+
+socket.emit('channel-name', 'Hello world!');
+socket.on('channel-name', (message) => "hi");
+
+
+// Server side
+socket.on('message', (message) => {
+	// Save the message document in the `messages` collection.
+	db.collection('messages').insert(message);
+	
+	// The `broadcast` allows us to send to all users but the sender.
+	socket.broadcast.emit('message', message);
+  })
+  
 var cors = require('cors');
 const mongoose = require('mongoose');
 
 // Middleware necessary for front end to talk to backend
 app.use(cors({
-  credentials: true,
-  origin: ['http://localhost:3000'],
+	credentials: true,
+	origin: ['http://localhost:3000'],
 }));
 
 // ===== Middleware ====
@@ -40,17 +64,19 @@ app.use(bodyParser.json())
 app.use(
 	session({
 		secret: process.env.APP_SECRET || 'this is the default passphrase',
-		store: new MongoStore({ mongooseConnection: dbConnection }),
+		store: new MongoStore({
+			mongooseConnection: dbConnection
+		}),
 		resave: false,
 		saveUninitialized: false
 	})
 )
 
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
 	res.header("Access-Control-Allow-Origin", "*");
 	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 	next();
-  });
+});
 
 // ===== Passport ====
 app.use(passport.initialize())
@@ -58,7 +84,7 @@ app.use(passport.session()) // will call the deserializeUser
 
 // ===== testing middleware =====
 //this is working
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
 	// console.log('===== passport user =======')
 	// console.log(req.session)
 	// console.log(req.user)
@@ -89,17 +115,16 @@ app.get('/users', (req, res, next) => {
 	// 	return res.json({ User: null })
 	// }
 
-	User.find({}, function(error, results) {
+	User.find({}, function (error, results) {
 		// Show any errors
 		if (error) {
-		  console.log(error);
+			console.log(error);
+		} else {
+			console.log(results)
+			// Otherwise, send the books we found to the browser as a json
+			res.json(results);
 		}
-		else {
-		  console.log(results)
-		  // Otherwise, send the books we found to the browser as a json
-		  res.json(results);
-		}
-	  });
+	});
 
 	//res.json("hello")
 })
@@ -114,17 +139,16 @@ app.get('/drivers', (req, res, next) => {
 	// 	return res.json({ User: null })
 	// }
 
-	Driver.find({}, function(error, results) {
+	Driver.find({}, function (error, results) {
 		// Show any errors
 		if (error) {
-		  console.log(error);
+			console.log(error);
+		} else {
+			console.log(results)
+			// Otherwise, send the books we found to the browser as a json
+			res.json(results);
 		}
-		else {
-		  console.log(results)
-		  // Otherwise, send the books we found to the browser as a json
-		  res.json(results);
-		}
-	  });
+	});
 
 	//res.json("hello")
 })
@@ -134,96 +158,91 @@ app.get('/inventory', (req, res, next) => {
 	// console.log(req.User)
 
 
-	Inventory.find({}, function(error, results) {
+	Inventory.find({}, function (error, results) {
 		// Show any errors
 		if (error) {
-		  console.log(error);
+			console.log(error);
+		} else {
+			console.log(results)
+			// Otherwise, send the books we found to the browser as a json
+			res.json(results);
 		}
-		else {
-		  console.log(results)
-		  // Otherwise, send the books we found to the browser as a json
-		  res.json(results);
-		}
-	  });
+	});
 
 	//res.json("hello")
 })
 
-app.post("/submitInventory", function(req, res) {
+app.post("/submitInventory", function (req, res) {
 	// Save the request body as an object called book
 	var newParcel = req.body;
 	//res.json(newParcel);
 	console.log(newParcel);
 	console.log("SUCCCESS");
 	//check distances here-----
-  
-	Inventory.create(newParcel, function(error, saved) {
-	  // Show any errors
-	  if (error) {
-		console.log(error);
-	  }
-	  else {
-		// Otherwise, send the response to the client (for AJAX success function)
-		res.send(saved);
-		//console.log("Saved:", newParcel);
 
-		//ANOTHER QUERY	
-		//grab all drivers
+	Inventory.create(newParcel, function (error, saved) {
+		// Show any errors
+		if (error) {
+			console.log(error);
+		} else {
+			// Otherwise, send the response to the client (for AJAX success function)
+			res.send(saved);
+			//console.log("Saved:", newParcel);
 
-		Driver.find({ }, function(error, found) {
-			// Show any errors
-			if (error) {
-			  console.log(error);
-			}
-			else {
-				console.log(found)
-				res.json(found);
-				//inside callback: do math with the google API 
-			}
-		  });
-	
-	  }
+			//ANOTHER QUERY	
+			//grab all drivers
+
+			Driver.find({}, function (error, found) {
+				// Show any errors
+				if (error) {
+					console.log(error);
+				} else {
+					console.log(found)
+					res.json(found);
+					//inside callback: do math with the google API 
+				}
+			});
+
+		}
 	});
 
 
-  });
+});
 
-app.post("/git", function(req, res) {
+app.post("/git", function (req, res) {
 	// Save the request body as an object called book
 	var newUser = req.body;
 	//res.json(newUser);
 	console.log(newUser);
 	console.log("SUCCCESS");
 	//check distances here-----
-	
-	User.create(newUser, function(error, saved) {
+
+	User.create(newUser, function (error, saved) {
 		// Show any errors
 		if (error) {
 			console.log(error);
-		}
-		else {
-		// Otherwise, send the response to the client (for AJAX success function)
-		res.send(saved);
-		//console.log("Saved:", newParcel);
+		} else {
+			// Otherwise, send the response to the client (for AJAX success function)
+			res.send(saved);
+			//console.log("Saved:", newParcel);
 
-		//ANOTHER QUERY	
-		//grab all drivers
+			//ANOTHER QUERY	
+			//grab all drivers
 
-		User.find({ }, function(error, found) {
-			// Show any errors
-			if (error) {
-				console.log(error);
-			}
-			else {
-				console.log(found)
-				res.json(found);
-				//inside callback: do math with the google API 
-			}
+			User.find({}, function (error, found) {
+				// Show any errors
+				if (error) {
+					console.log(error);
+				} else {
+					console.log(found)
+					res.json(found);
+					//inside callback: do math with the google API 
+				}
 			});
 		}
 	});
 });
-	
+
 
 app.get('/',
 	(req, res, next) => {
@@ -252,14 +271,15 @@ if (process.env.NODE_ENV === 'production') {
 app.use('/api', require('./auth'))
 
 // ====== Error handler ====
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
 	console.log('====== ERROR =======')
 	console.error(err.stack)
 	res.status(500)
-``})
+	``
+})
 
 // ==== Starting Server =====
-app.listen(PORT, () => {
+server.listen(PORT, () => {
 	console.log(`App listening on PORT: ${PORT}`)
 });
 
@@ -271,23 +291,23 @@ app.listen(PORT, () => {
 
 // Create an object containing dummy data to save to the database
 var driver = {
-  array: ["driver1", "driver2", "driver3"],
-  string: []
-  //   "\"Don't worry if it doesn't work right. If everything did, you'd be out of a job\" - Mosher's Law of Software Engineering",
+	array: ["driver1", "driver2", "driver3"],
+	string: []
+	//   "\"Don't worry if it doesn't work right. If everything did, you'd be out of a job\" - Mosher's Law of Software Engineering",
 };
 
 var user = {
-    array: ["sender1", "sender2", "sender3"],
-    string: []
-    //   "\"Don't worry if it doesn't work right. If everything did, you'd be out of a job\" - Mosher's Law of Software Engineering",
-  };
+	array: ["sender1", "sender2", "sender3"],
+	string: []
+	//   "\"Don't worry if it doesn't work right. If everything did, you'd be out of a job\" - Mosher's Law of Software Engineering",
+};
 
-  var inventory = {
-    array: ["package1", "package2", "package3"],
-    string: []
-    //   "\"Don't worry if it doesn't work right. If everything did, you'd be out of a job\" - Mosher's Law of Software Engineering",
-	};
-	
+var inventory = {
+	array: ["package1", "package2", "package3"],
+	string: []
+	//   "\"Don't worry if it doesn't work right. If everything did, you'd be out of a job\" - Mosher's Law of Software Engineering",
+};
+
 
 
 // app.get("/test-user", function(req, res) {
@@ -323,7 +343,7 @@ var user = {
 // 	}
 // )
 
-  
+
 // Driver.create(
 // 	{
 // 	  fullName: "Vanita",
@@ -351,7 +371,7 @@ var user = {
 // 	  // 	googleId: "jakcie",
 // 	  // ]
 // 	},
-	
+
 // 	function(error, data) {
 // 		if (error) throw error;
 // 		console.log(data)
@@ -359,7 +379,7 @@ var user = {
 // );
 
 // Inventory.create( 
-	
+
 // {inventoryItemName: "Mom's Present",
 // pickUpAddress: "22020 17th Avenue Southeast, Bothell, WA 98021",
 // dropOffAddress: "901 Boren Ave, Seattle, WA 98104",
@@ -367,7 +387,7 @@ var user = {
 // isComplete: "true",
 // tShirtSize: "L",
 // },
-	
+
 // {inventoryItemName: "Dad's Present",
 // pickUpAddress: "21714 43rd Drive Southeast, Bothell, WA 98021",
 // dropOffAddress: "1221 1st Ave, Seattle, WA 98101",
@@ -393,7 +413,7 @@ var user = {
 
 // );
 
- // Save a new Example using the data object
+// Save a new Example using the data object
 // db.create.User(data)
 //   .then(function(dbUser) {
 //     // If saved successfully, print the new Example document to the console
